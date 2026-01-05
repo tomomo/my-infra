@@ -1,0 +1,56 @@
+# --- ステージ1: ツール類の準備 ---
+FROM redhat/ubi8-minimal AS tools
+
+# --- ステージ2: 実行用メインイメージ ---
+FROM redhat/ubi8-minimal
+
+# 1. OSパッケージとPHP 7.4のインストール
+RUN microdnf install -y tar gzip unzip \
+    && curl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+    && curl -O https://rpms.remirepo.net/enterprise/remi-release-8.rpm \
+    && rpm -i --nosignature epel-release-latest-8.noarch.rpm remi-release-8.rpm \
+    && microdnf module enable php:remi-7.4 -y \
+    && microdnf install -y \
+       # PHP拡張 (php-pecl-imagickを追加)
+       php-cli php-fpm php-intl php-mbstring php-xml php-zip php-gd php-mysqlnd \
+       php-opcache php-imap php-pgsql php-pecl-imagick \
+       # OSツール
+       tzdata git git-lfs unzip procps-ng vim-minimal findutils shadow-utils libstdc++ \
+       --setopt=install_weak_deps=0 \
+       --nodocs \
+    && microdnf clean all \
+    && rm -rf epel-release-latest-8.noarch.rpm remi-release-8.rpm /var/cache/yum /var/cache/dnf
+
+# 2. PHP-FPMの設定
+RUN sed -i 's/listen = \/run\/php-fpm\/www.sock/listen = 9000/' /etc/php-fpm.d/www.conf \
+    && sed -i 's/listen.allowed_clients = 127.0.0.1/;listen.allowed_clients = 127.0.0.1/' /etc/php-fpm.d/www.conf \
+    && sed -i 's/;security.limit_extensions = .php .php3 .php4 .php5 .php7/security.limit_extensions = .php .html/' /etc/php-fpm.d/www.conf \
+    && mkdir -p /run/php-fpm && chmod 777 /run/php-fpm
+
+# 3. 外部ツールのコピー
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=node:18-slim /usr/local/bin/node /usr/local/bin/node
+
+# 4. pnpmのインストール
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh - \
+    && ln -s /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm \
+    && rm -rf /root/.local/share/pnpm/store
+
+# 5. タイムゾーンを日本設定に変更
+ENV TZ=Asia/Tokyo
+
+# 6. UBI/RedHat系でタイムゾーンを反映させる設定
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 7. ターミナル表記とカラー設定の変更
+ENV TERM=xterm-256color
+
+RUN { \
+    echo 'export PS1="\[\e[1;32m\]\u@\h\[\e[m\]:\[\e[1;36m\]\W\[\e[1;32m\]\\$ \[\e[m\]"'; \
+    echo "alias ls='ls --color=auto'"; \
+    echo "alias ll='ls -l --color=auto'"; \
+    echo "alias grep='grep --color=auto'"; \
+    } > /etc/profile.d/custom_terminal.sh
+
+WORKDIR /app
+CMD ["php-fpm", "-F"]

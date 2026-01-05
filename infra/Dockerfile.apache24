@@ -1,0 +1,22 @@
+FROM redhat/ubi9-minimal
+
+# Apache (httpd) と mod_ssl (SSL/HTTP2に必須) のインストール
+RUN microdnf install -y httpd mod_ssl \
+    && microdnf clean all
+
+# 必要なモジュールの有効化 (LoadModule のコメント解除)
+# - rewrite: URLの書き換え (CodeIgniterに必須)
+# - proxy_fcgi: PHP-FPM連携
+# - http2: HTTP/2通信
+RUN sed -i 's/#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/httpd/conf.modules.d/00-base.conf \
+    && sed -i 's/#LoadModule proxy_module/LoadModule proxy_module/' /etc/httpd/conf.modules.d/00-proxy.conf \
+    && sed -i 's/#LoadModule proxy_fcgi_module/LoadModule proxy_fcgi_module/' /etc/httpd/conf.modules.d/00-proxy.conf \
+    && sed -i 's/#LoadModule http2_module/LoadModule http2_module/' /etc/httpd/conf.modules.d/00-base.conf
+
+# デフォルトのSSL設定やウェルカムページが邪魔をしないように調整
+RUN rm -f /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/ssl.conf
+
+# 設定ファイルのコピー
+COPY apache24/conf/000-default.conf /etc/httpd/conf.d/000-default.conf
+
+CMD ["httpd", "-D", "FOREGROUND"]
