@@ -1,0 +1,21 @@
+services:
+  apache24:
+    image: my-infra-apache:2.4
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.apache24
+  php84:
+    image: my-infra-php:8.4
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.php84-node22
+  php81:
+    image: my-infra-php:8.1
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.php81-node20
+  php74:
+    image: my-infra-php:7.4
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.php74-node18
