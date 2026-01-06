@@ -29,7 +29,7 @@ RUN microdnf install -y tar gzip \
     && sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/almalinux-crb.repo \
     && microdnf module enable php:remi-8.4 -y \
     && microdnf install -y \
-       php-{cli,fpm,intl,mbstring,xml,zip,gd,mysqlnd,opcache,imap,pgsql,pecl-imagick-im6,redis} \
+       php-{cli,fpm,intl,mbstring,xml,zip,gd,mysqlnd,opcache,imap,pgsql,redis} \
        tzdata git git-lfs unzip procps-ng vim-minimal findutils shadow-utils libstdc++ \
        --setopt=install_weak_deps=0 --nodocs \
     # --- 不要なファイルの徹底削除 ---
