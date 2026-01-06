@@ -4,6 +4,11 @@ services:
     build:
       context: ./infra
       dockerfile: Dockerfile.apache24
+  php85:
+    image: my-infra-php:8.5
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.php85-node22
   php84:
     image: my-infra-php:8.4
     build:

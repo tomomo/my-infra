@@ -1,0 +1,64 @@
+# --- ステージ1: 外部ツールの準備 ---
+FROM node:22-slim AS node-bins
+# pnpmをグローバルにインストールして、実体（バイナリとライブラリ）を確定させる
+RUN npm install -g pnpm@latest
+
+# --- ステージ2: 実行用メインイメージ (AlmaLinux 9 minimal) ---
+FROM almalinux:9-minimal
+
+ENV TZ=Asia/Tokyo \
+    TERM=xterm-256color \
+    COMPOSER_ALLOW_SUPERUSER=1
+
+# 1. 外部バイナリのコピー
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Node本体と、pnpmの実体を含む node_modules をコピー
+COPY --from=node-bins /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-bins /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+# 実行ファイルへの直リンク（Corepackを介さないため、実行時ダウンロードが発生しない）
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /usr/local/lib/node_modules/pnpm/bin/pnpm.cjs /usr/local/bin/pnpm \
+    && ln -s /usr/local/lib/node_modules/pnpm/bin/pnpx.cjs /usr/local/bin/pnpx
+
+# 2. OSパッケージインストール・PHP設定（1レイヤー徹底追求）
+RUN microdnf install -y tar gzip \
+    && curl -LO https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+    && curl -LO https://rpms.remirepo.net/enterprise/remi-release-9.rpm \
+    && rpm -i --nosignature epel-release-latest-9.noarch.rpm remi-release-9.rpm \
+    && sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/almalinux-crb.repo \
+    && microdnf module enable php:remi-8.5 -y \
+    && microdnf install -y \
+       php-{cli,fpm,intl,mbstring,xml,zip,gd,mysqlnd,imap,pgsql,redis} \
+       tzdata git git-lfs unzip procps-ng vim-minimal findutils shadow-utils libstdc++ \
+       --setopt=install_weak_deps=0 --nodocs \
+    # --- 不要なファイルの徹底削除 ---
+    && microdnf clean all \
+    && rm -rf epel-release-latest-9.noarch.rpm remi-release-9.rpm /var/cache/yum /var/cache/dnf /tmp/* \
+    # ロケールとドキュメントを削除（ダイエット）
+    && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'ja' ! -name 'en*' -exec rm -rf {} + \
+    && rm -rf /usr/share/man/* /usr/share/info/* /usr/share/doc/* \
+    # --- PHP & システム設定 ---
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && mkdir -p /run/php-fpm && chmod 777 /run/php-fpm \
+    && sed -i -e 's/listen = \/run\/php-fpm\/www.sock/listen = 9000/' \
+              -e 's/listen.allowed_clients = 127.0.0.1/;listen.allowed_clients = 127.0.0.1/' \
+              -e 's/;security.limit_extensions = .php .php3 .php4 .php5 .php7/security.limit_extensions = .php .html/' /etc/php-fpm.d/www.conf \
+    && { \
+       echo 'memory_limit = 512M'; \
+       echo 'opcache.enable=1'; \
+       echo 'opcache.enable_cli=1'; \
+       echo 'opcache.jit_buffer_size=128M'; \
+       echo 'opcache.jit=tracing'; \
+       } > /etc/php.d/99-tuning.ini
+
+# 3. ターミナル設定
+RUN { \
+    echo 'export PS1="\[\e[1;32m\]\u@\h\[\e[m\]:\[\e[1;36m\]\W\[\e[1;32m\]\\$ \[\e[m\]"'; \
+    echo "alias ls='ls --color=auto'"; \
+    echo "alias ll='ls -l --color=auto'"; \
+    echo "alias grep='grep --color=auto'"; \
+    } > /etc/profile.d/custom_terminal.sh
+
+WORKDIR /app
+CMD ["php-fpm", "-F"]
