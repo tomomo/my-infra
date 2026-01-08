@@ -2,6 +2,7 @@
   "recommendations": [
     "prettier.prettier-vscode",
     "davidanson.vscode-markdownlint",
-    "ms-azuretools.vscode-containers"
+    "ms-azuretools.vscode-containers",
+    "mrmlnc.vscode-apache"
   ]
 }

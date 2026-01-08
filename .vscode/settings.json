@@ -1,4 +1,7 @@
 {
+  "files.associations": {
+    "**/apache2/**/*.conf": "apacheconf"
+  },
   "[jsonc]": {
     "editor.defaultFormatter": "prettier.prettier-vscode",
     "editor.formatOnSave": true

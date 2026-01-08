@@ -1,0 +1,76 @@
+# ==========================================
+# AlmaLinux 9 - PHP 8.5 & Node.js 22 Environment
+# Built for: Multi-architecture (arm64 / x86_64)
+# ==========================================
+FROM almalinux:9-minimal
+
+# 環境変数設定
+ENV TZ=Asia/Tokyo \
+    TERM=xterm-256color \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    PNPM_HOME="/root/.local/share/pnpm" \
+    PATH="/root/.local/share/pnpm:/usr/local/bin:$PATH"
+
+# 1. 基礎ツール準備 & DNF高速化設定
+RUN microdnf install -y ca-certificates tar gzip xz \
+    && microdnf update -y ca-certificates \
+    && { \
+       echo "max_parallel_downloads=10"; \
+       echo "fastestmirror=True"; \
+       echo "timeout=15"; \
+       echo "retries=2"; \
+       } >> /etc/dnf/dnf.conf
+
+# 2. リポジトリ再構築（RIKEN & 公式ミラーのハイブリッド）
+RUN printf "[baseos]\nname=AlmaLinux 9 - BaseOS\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/BaseOS/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/baseos?arch=\$basearch&repo=BaseOS\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n\n[appstream]\nname=AlmaLinux 9 - AppStream\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/AppStream/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/appstream?arch=\$basearch&repo=AppStream\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n\n[crb]\nname=AlmaLinux 9 - CRB\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/CRB/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/crb?arch=\$basearch&repo=CRB\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n" > /etc/yum.repos.d/almalinux.repo \
+    && rm -f /etc/yum.repos.d/almalinux-resilientstorage.repo /etc/yum.repos.d/almalinux-extras.repo /etc/yum.repos.d/almalinux-highavailability.repo /etc/yum.repos.d/almalinux-sap.repo /etc/yum.repos.d/almalinux-saphana.repo
+
+# 3. 外部リポジトリ(EPEL/Remi)追加
+RUN curl -f --retry 5 -LO https://ftp.riken.jp/Linux/fedora/epel/epel-release-latest-9.noarch.rpm \
+    && curl -f --retry 5 -LO https://rpms.remirepo.net/enterprise/remi-release-9.rpm \
+    && rpm -i epel-release-latest-9.noarch.rpm remi-release-9.rpm \
+    && rm -f epel-release-latest-9.noarch.rpm remi-release-9.rpm
+
+# 4. PHP 8.5 / Node.js 22 / 開発ツールのインストール
+# COPY --from を使わず、ビルド環境のアーキテクチャに追従させる
+RUN microdnf module enable php:remi-8.5 nodejs:22 -y \
+    && microdnf install -y --refresh \
+       php-{cli,fpm,intl,mbstring,xml,zip,gd,mysqlnd,imap,pgsql,redis,devel} \
+       nodejs npm \
+       tzdata git git-lfs unzip procps-ng vim-minimal findutils shadow-utils libstdc++ \
+       gcc gcc-c++ make autoconf automake python3 pkgconf-pkg-config \
+       zlib-devel openssl-devel \
+       --setopt=install_weak_deps=0 --nodocs \
+    # Composer 2.x のインストール (アーキテクチャ非依存)
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && microdnf clean all
+
+# 5. pnpmの導入 (Corepack非推奨化を見据え、npm install -g を使用)
+RUN npm install -g pnpm@latest \
+    && npm cache clean --force \
+    && microdnf clean all
+
+# 6. PHP & システム設定 (JIT有効化)
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && mkdir -p /run/php-fpm && chmod 777 /run/php-fpm \
+    && sed -i -e 's/listen = \/run\/php-fpm\/www.sock/listen = 9000/' \
+              -e 's/listen.allowed_clients = 127.0.0.1/;listen.allowed_clients = 127.0.0.1/' \
+              -e 's/;security.limit_extensions = .php .php3 .php4 .php5 .php7/security.limit_extensions = .php .html/' /etc/php-fpm.d/www.conf \
+    && { \
+       echo 'memory_limit = 512M'; \
+       echo 'opcache.enable=1'; \
+       echo 'opcache.enable_cli=1'; \
+       echo 'opcache.jit_buffer_size=128M'; \
+       echo 'opcache.jit=tracing'; \
+       } > /etc/php.d/99-tuning.ini
+
+# 7. ターミナル設定
+RUN { \
+    echo 'export PS1="\[\e[1;32m\]\u@\h\[\e[m\]:\[\e[1;36m\]\W\[\e[1;32m\]\\$ \[\e[m\]"'; \
+    echo "alias ls='ls --color=auto'"; \
+    echo "alias ll='ls -l --color=auto'"; \
+    echo "alias grep='grep --color=auto'"; \
+    } > /etc/profile.d/custom_terminal.sh
+
+WORKDIR /app
+CMD ["php-fpm", "-F"]
