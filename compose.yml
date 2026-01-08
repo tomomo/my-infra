@@ -1,26 +1,26 @@
 services:
-  apache24:
-    image: my-infra-apache:2.4
+  alma9-apache24:
+    image: my-infra-web:alma9-apache24
     build:
       context: ./infra
-      dockerfile: Dockerfile.apache24
-  php85:
-    image: my-infra-php:8.5
+      dockerfile: Dockerfile.alma9-apache24
+  alma9-php85-njs22:
+    image: my-infra-app:alma9-php85-njs22
     build:
       context: ./infra
-      dockerfile: Dockerfile.php85-node22
-  php84:
-    image: my-infra-php:8.4
+      dockerfile: Dockerfile.alma9-php85-njs22
+  alma9-php84-njs22:
+    image: my-infra-app:alma9-php84-njs22
     build:
       context: ./infra
-      dockerfile: Dockerfile.php84-node22
-  php81:
-    image: my-infra-php:8.1
+      dockerfile: Dockerfile.alma9-php84-njs22
+  alma9-php81-njs20:
+    image: my-infra-app:alma9-php81-njs20
     build:
       context: ./infra
-      dockerfile: Dockerfile.php81-node20
-  php74:
-    image: my-infra-php:7.4
+      dockerfile: Dockerfile.alma9-php81-njs20
+  alma8-php74-njs18:
+    image: my-infra-php:alma8-php74-njs18
     build:
       context: ./infra
-      dockerfile: Dockerfile.php74-node18
+      dockerfile: Dockerfile.alma8-php74-njs18
