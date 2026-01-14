@@ -18,9 +18,36 @@ RUN sed -i 's/#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/httpd/
 # デフォルト設定の削除
 RUN rm -f /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/ssl.conf
 
-# 設定ファイルのコピー
-# ※ホスト側のパス apache24/conf/... に合わせて調整してください
-COPY apache24/conf/000-default.conf /etc/httpd/conf.d/000-default.conf
+# ホストのファイル内容はビルド時に埋め込みます
+RUN cat > /etc/httpd/conf.d/000-default.conf <<'EOF'
+ServerTokens ProductOnly
+
+<Directory "/app">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+
+    DirectoryIndex disabled
+    DirectoryIndex index.php index.html
+</Directory>
+
+RewriteEngine     On
+ProxyRequests     Off
+ProxyPreserveHost Off
+
+Redirect /phpmyadmin /phpmyadmin/
+<Location /phpmyadmin/>
+    ProxyPass         http://phpmyadmin/
+    ProxyPassReverse  http://phpmyadmin/
+</Location>
+
+Redirect /mailpit /mailpit/
+<Location /mailpit/>
+    ProxyPass         http://mailpit:8025/mailpit/
+    ProxyPassReverse  http://mailpit:8025/mailpit/
+</Location>
+
+EOF
 
 # タイムゾーンの設定（ログの時間などが日本時間になります）
 RUN ln -snf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
