@@ -1,0 +1,108 @@
+{
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": null,
+  "editor.insertSpaces": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "never",
+    "source.organizeImports.biome": "never"
+  },
+  "files.eol": "\n",
+  "files.associations": {
+    ".devcontainer/apache24/**/*.conf": "apacheconf",
+    ".prettierrc": "jsonc",
+    "biome.json": "jsonc"
+  },
+
+  // NOTE: ユーザー側設定に好みで記載
+  // "editor.tabSize": 2,
+  // "typescript.inlayHints.variableTypes.enabled": true,
+  // "typescript.inlayHints.parameterNames.enabled": "all",
+  // "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.formatOnSave": true
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers",
+    "editor.formatOnSave": true
+  },
+
+  // --- フォーマッターにprettierを使う言語設定 ---
+  "prettier.enable": true,
+  "[css]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[sass]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+
+  // --- フォーマッターにbiomeを使う言語設定 ---
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "always",
+      "source.organizeImports.biome": "always"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "always",
+      "source.organizeImports.biome": "always"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "always",
+      "source.organizeImports.biome": "always"
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": false
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "always",
+      "source.organizeImports.biome": "always"
+    }
+  },
+  // // NOTE: 2025年末時点において、htmlのフォーマッターはbiomeよりprettierの方が優れている
+  // "[html]": {
+  // 	"editor.defaultFormatter": "biomejs.biome",
+  // 	"editor.formatOnSave": true,
+  // 	"editor.codeActionsOnSave": {
+  // 		"source.fixAll.biome": "always"
+  // 	}
+  // },
+
+  "php-cs-fixer.executablePath": "${workspaceFolder}/vendor/bin/php-cs-fixer",
+  "php-cs-fixer.config": ".php-cs-fixer.dist.php",
+  // "php-cs-fixer.rules": "@PER-CS2.0",
+  "php-cs-fixer.onsave": true,
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer",
+    "editor.formatOnSave": true
+  }
+}

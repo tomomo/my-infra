@@ -1,0 +1,80 @@
+{
+  "name": "example",
+  "dockerComposeFile": ["../compose.dev.yml"],
+  "service": "php84",
+  "workspaceFolder": "/app/my-php-example",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // PHP環境用カラー
+        "workbench.colorCustomizations": {
+          "activityBar.activeBackground": "#444872",
+          "activityBar.background": "#444872",
+          "activityBar.foreground": "#e7e7e7",
+          "activityBar.inactiveForeground": "#e7e7e799",
+          "activityBarBadge.background": "#140c0d",
+          "activityBarBadge.foreground": "#e7e7e7",
+          "commandCenter.border": "#e7e7e799",
+          "sash.hoverBorder": "#444872",
+          "statusBar.background": "#313452",
+          "statusBar.foreground": "#e7e7e7",
+          "statusBarItem.hoverBackground": "#444872",
+          "statusBarItem.remoteBackground": "#313452",
+          "statusBarItem.remoteForeground": "#e7e7e7",
+          "titleBar.activeBackground": "#313452",
+          "titleBar.activeForeground": "#e7e7e7",
+          "titleBar.inactiveBackground": "#31345299",
+          "titleBar.inactiveForeground": "#e7e7e799"
+        }
+      },
+      "extensions": [
+        // リモート開発関連拡張
+        "ms-vscode-remote.remote-containers", // Dev Containers
+        "ms-vscode-remote.remote-ssh", // Remote - SSH
+        "ms-vscode.remote-explorer", // Remote Explorer
+        "ms-azuretools.vscode-containers", // Container Tools
+        "ms-azuretools.vscode-docker", // Docker
+        "docker.docker", // Docker DX
+
+        // GitHub関連拡張
+        "github.copilot", // GitHub Copilot
+        "github.copilot-chat", // GitHub Copilot Chat
+
+        // Git関連拡張
+        "eamodio.gitlens", // GitLens — Git supercharged
+        "mhutchie.git-graph", // Git Graph
+        "codezombiech.gitignore", // gitignore
+
+        // Markdown関連拡張
+        "yzhang.markdown-all-in-one", // markdown all in one
+        "davidanson.vscode-markdownlint",
+
+        // JSON/YAML関連拡張
+        "redhat.vscode-yaml",
+
+        // TypeScript/JavaScript関連拡張
+        "yoavbls.pretty-ts-errors",
+
+        // その他便利拡張
+        "natqe.reload", // Reload
+        "streetsidesoftware.code-spell-checker", // Code Spell Checker
+        "tyriar.sort-lines", // Sort Lines
+        "usernamehw.errorlens", // Error Lens
+
+        // コードフォーマッター関連拡張
+        "prettier.prettier-vscode",
+        "biomejs.biome",
+
+        // Apache関連拡張
+        "mrmlnc.vscode-apache",
+
+        // HTML関連拡張
+        "formulahendry.auto-close-tag", // Auto Close Tag
+        "formulahendry.auto-rename-tag", // Auto Rename Tag
+
+        // PHP関連拡張
+        "junstyle.php-cs-fixer"
+      ]
+    }
+  }
+}
