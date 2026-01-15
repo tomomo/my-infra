@@ -1,0 +1,8 @@
+{
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.10",
+		"prettier": "^3.7.4",
+		"prettier-plugin-css-order": "^2.1.2",
+		"prettier-plugin-organize-attributes": "^1.0.0"
+	}
+}

@@ -1,0 +1,79 @@
+x-base: &base
+  restart: no
+
+x-volumes: &contents-volumes
+  - .:/app/my-php-example
+
+services:
+  apache:
+    <<: *base
+    image: my-infra-web:alma9-apache24
+    ports:
+      - '80:80'
+    configs:
+      - source: vhosts_php84_conf
+        target: /etc/httpd/conf.d/010-php84.conf
+      - source: vhosts_php81_conf
+        target: /etc/httpd/conf.d/020-php81.conf
+    volumes: *contents-volumes
+  php84:
+    <<: *base
+    image: my-infra-app:alma9-php84-njs22
+    volumes: *contents-volumes
+  php81:
+    <<: *base
+    image: my-infra-app:alma9-php81-njs20
+    volumes: *contents-volumes
+  db:
+    <<: *base
+    image: mariadb:lts
+    volumes:
+      - data:/var/lib/mysql
+    environment:
+      TZ: Asia/Tokyo
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: ${database_default_database}
+      MARIADB_USER: ${database_default_username}
+      MARIADB_PASSWORD: ${database_default_password}
+      MARIADB_AUTO_UPGRADE: '1'
+    command: --default-time-zone=+09:00
+  phpmyadmin:
+    <<: *base
+    image: phpmyadmin
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      MEMORY_LIMIT: 256M
+      UPLOAD_LIMIT: 256M
+      MAX_EXECUTION_TIME: 0
+    volumes:
+      - ./.devcontainer/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+  mailpit:
+    <<: *base
+    image: axllent/mailpit:latest
+    ports:
+      - '19925:1025'
+    # NOTE: MP_BASEPATはなぜか有効に動かないのでコマンドとMP_BASEPATHを指定する
+    command: [ '--webroot', '/mailpit' ]
+    environment:
+      TZ: Asia/Tokyo
+      MP_MAX_MESSAGES: 2000
+      MP_BASEPATH: /mailpit
+      MP_HTTP_BIND_ADDR: 0.0.0.0:8025
+      MP_DATABASE: ':memory:'
+      MP_SMTP_AUTH_ACCEPT_ANY: true
+      MP_SMTP_AUTH_ALLOW_INSECURE: true
+
+volumes:
+  data:
+    # external: true
+    # name: example_data
+
+configs:
+  vhosts_php84_conf:
+    file: .devcontainer/apache24/vhosts/php84.conf
+  vhosts_php81_conf:
+    file: .devcontainer/apache24/vhosts/php81.conf
