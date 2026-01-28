@@ -59,7 +59,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
               -e 's/listen.allowed_clients = 127.0.0.1/;listen.allowed_clients = 127.0.0.1/' \
               -e 's/;security.limit_extensions = .php .php3 .php4 .php5 .php7/security.limit_extensions = .php .html/' /etc/php-fpm.d/www.conf \
     && { \
-       echo 'memory_limit = 512M'; \
+       echo 'memory_limit = -1'; \
        echo 'opcache.enable=1'; \
        echo 'opcache.enable_cli=1'; \
        echo 'opcache.jit_buffer_size=128M'; \
