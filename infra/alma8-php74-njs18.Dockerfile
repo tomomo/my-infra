@@ -24,8 +24,28 @@ RUN microdnf install -y ca-certificates tar gzip xz \
 
 # 2. リポジトリ再構築（GPGキーパスの修正）
 # AlmaLinux 8のキーファイル名は一般的に RPM-GPG-KEY-AlmaLinux です
-RUN printf "[baseos]\nname=AlmaLinux 8 - BaseOS\nbaseurl=https://ftp.riken.jp/Linux/almalinux/8/BaseOS/\$basearch/os/\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux\n\n[appstream]\nname=AlmaLinux 8 - AppStream\nbaseurl=https://ftp.riken.jp/Linux/almalinux/8/AppStream/\$basearch/os/\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux\n\n[crb]\nname=AlmaLinux 8 - PowerTools\nbaseurl=https://ftp.riken.jp/Linux/almalinux/8/PowerTools/\$basearch/os/\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux\n" > /etc/yum.repos.d/almalinux.repo \
-    && rm -f /etc/yum.repos.d/almalinux-resilientstorage.repo /etc/yum.repos.d/almalinux-extras.repo /etc/yum.repos.d/almalinux-highavailability.repo /etc/yum.repos.d/almalinux-sap.repo /etc/yum.repos.d/almalinux-saphana.repo
+RUN rm -f /etc/yum.repos.d/almalinux-*.repo && <<EOF cat > /etc/yum.repos.d/almalinux.repo
+[baseos]
+name=AlmaLinux 8 - BaseOS
+baseurl=https://ftp.riken.jp/Linux/almalinux/8/BaseOS/\$basearch/os/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+
+[appstream]
+name=AlmaLinux 8 - AppStream
+baseurl=https://ftp.riken.jp/Linux/almalinux/8/AppStream/\$basearch/os/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+
+[crb]
+name=AlmaLinux 8 - PowerTools
+baseurl=https://ftp.riken.jp/Linux/almalinux/8/PowerTools/\$basearch/os/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+EOF
 
 # 3. 外部リポジトリ(EPEL/Remi)追加
 RUN curl -f --retry 5 -LO https://ftp.riken.jp/Linux/fedora/epel/epel-release-latest-8.noarch.rpm \

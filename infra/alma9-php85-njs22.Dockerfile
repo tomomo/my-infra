@@ -22,8 +22,31 @@ RUN microdnf install -y ca-certificates tar gzip xz \
        } >> /etc/dnf/dnf.conf
 
 # 2. リポジトリ再構築（RIKEN & 公式ミラーのハイブリッド）
-RUN printf "[baseos]\nname=AlmaLinux 9 - BaseOS\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/BaseOS/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/baseos?arch=\$basearch&repo=BaseOS\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n\n[appstream]\nname=AlmaLinux 9 - AppStream\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/AppStream/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/appstream?arch=\$basearch&repo=AppStream\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n\n[crb]\nname=AlmaLinux 9 - CRB\nbaseurl=https://ftp.riken.jp/Linux/almalinux/9/CRB/\$basearch/os/\nmirrorlist=https://mirrors.almalinux.org/mirrorlist/9/crb?arch=\$basearch&repo=CRB\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9\n" > /etc/yum.repos.d/almalinux.repo \
-    && rm -f /etc/yum.repos.d/almalinux-resilientstorage.repo /etc/yum.repos.d/almalinux-extras.repo /etc/yum.repos.d/almalinux-highavailability.repo /etc/yum.repos.d/almalinux-sap.repo /etc/yum.repos.d/almalinux-saphana.repo
+RUN rm -f /etc/yum.repos.d/almalinux-*.repo && <<EOF cat > /etc/yum.repos.d/almalinux.repo
+[baseos]
+name=AlmaLinux 9 - BaseOS
+baseurl=https://ftp.riken.jp/Linux/almalinux/9/BaseOS/\$basearch/os/
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/9/baseos?arch=\$basearch&repo=BaseOS
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9
+
+[appstream]
+name=AlmaLinux 9 - AppStream
+baseurl=https://ftp.riken.jp/Linux/almalinux/9/AppStream/\$basearch/os/
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/9/appstream?arch=\$basearch&repo=AppStream
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9
+
+[crb]
+name=AlmaLinux 9 - CRB
+baseurl=https://ftp.riken.jp/Linux/almalinux/9/CRB/\$basearch/os/
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/9/crb?arch=\$basearch&repo=CRB
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux-9
+EOF
 
 # 3. 外部リポジトリ(EPEL/Remi)追加
 RUN curl -f --retry 5 -LO https://ftp.riken.jp/Linux/fedora/epel/epel-release-latest-9.noarch.rpm \
