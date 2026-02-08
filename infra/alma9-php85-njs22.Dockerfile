@@ -9,12 +9,14 @@ ENV TZ=Asia/Tokyo \
     TERM=xterm-256color \
     COMPOSER_ALLOW_SUPERUSER=1 \
     PNPM_HOME="/root/.local/share/pnpm" \
+    PNPM_CONFIG_STORE_DIR="/root/.local/share/pnpm/store" \
     PATH="/root/.local/share/pnpm:/usr/local/bin:$PATH"
 
 # 1. 基礎ツール準備 & DNF高速化設定
 RUN microdnf install -y ca-certificates tar gzip xz \
     && microdnf update -y ca-certificates \
     && { \
+       echo "[main]"; \
        echo "max_parallel_downloads=10"; \
        echo "fastestmirror=True"; \
        echo "timeout=15"; \
